@@ -1,6 +1,6 @@
 {
   "name": "sumologic",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Sync Application logs to sumo logic directly via their http API",
   "main": "sumo.js",
   "scripts": {
