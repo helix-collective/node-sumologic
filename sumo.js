@@ -22,43 +22,52 @@ module.exports = function SumoLogger(collectorCode, opts) {
   var request = opts.request || require('request');
   var collectorEndpoint = endpoint + collectorCode;
   var syncInterval = opts.syncInterval || 1000;
+  var timestamps = opts.timestamps || false;
 
   me.stdConsole = {
-    log: console.log,
-    info: console.info,
+    dir: console.warn,
     error: console.error,
-    warn: console.warn
+    info: console.info,
+    log: console.log,
+    warn: console.warn,
   }
+
   me.replaceConsole = function() {
-    console.log = me.log;
-    console.info = me.info;
+    console.dir = me.dir;
     console.error = me.error;
+    console.info = me.info;
+    console.log = me.log;
     console.warn = me.warn;
   }
 
   me.restoreConsole = function() {
-    console.log = me.stdConsole.log;
-    console.info = me.stdConsole.info;
+    console.dir = me.stdConsole.dir;
     console.error = me.stdConsole.error;
+    console.info = me.stdConsole.info;
+    console.log = me.stdConsole.log;
     console.warn = me.stdConsole.warn;
   }
 
   me.augmentConsole = function() {
-      console.log = function() {
-          me.stdConsole.log.apply(this, arguments);
-          me.log.apply(this, arguments);
+      console.dir = function() {
+          me.stdConsole.dir.apply(this, arguments);
+          me.dir.apply(this, arguments);
+      }
+      console.error = function() {
+          me.stdConsole.error.apply(this, arguments);
+          me.error.apply(this, arguments);
       }
       console.info = function() {
           me.stdConsole.info.apply(this, arguments);
           me.info.apply(this, arguments);
       }
+      console.log = function() {
+          me.stdConsole.log.apply(this, arguments);
+          me.log.apply(this, arguments);
+      }
       console.warn = function() {
           me.stdConsole.warn.apply(this, arguments);
           me.warn.apply(this, arguments);
-      }
-      console.error = function() {
-          me.stdConsole.error.apply(this, arguments);
-          me.error.apply(this, arguments);
       }
   }
 
@@ -84,9 +93,10 @@ module.exports = function SumoLogger(collectorCode, opts) {
   }
 
   // I want arguments to be treated as an object (helps indexing into the correct fields on sumo logic)
-  me.log = function() { append('INFO', arguments); };
-  me.info = function() { append('INFO', arguments); };
+  me.dir = function() { append('DIR', arguments); };
   me.error = function() { append('ERROR', arguments); };
+  me.info = function() { append('INFO', arguments); };
+  me.log = function() { append('INFO', arguments); };
   me.warn = function() { append('WARN', arguments); };
 
   var numBeingSent = 0;
