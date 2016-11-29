@@ -219,7 +219,7 @@ describe('Sumo Logic Collector', function() {
     check([1,2,3,4]);
   });
 
-  it("Augments console.log correctly", function () {
+  it("Augments console correctly", function () {
     var expected = {};
     var sumologic = newTestSumoLogger(function(opts, cb) {
       expect(JSON.parse(opts.body)).to.deep.equal({level: "INFO", data: expected});
@@ -250,5 +250,11 @@ describe('Sumo Logic Collector', function() {
     console.error("msg 1", "msg 2");
     expect(sumologic.error.calledOnce, 'sumo/error').to.equal(true);
     expect(sumologic.stdConsole.error.calledOnce, 'console/error').to.equal(true);
+
+    sinon.spy(sumologic, 'dir');
+    sinon.spy(sumologic.stdConsole, 'dir');
+    console.dir("msg 1", "msg 2");
+    expect(sumologic.dir.calledOnce, 'sumo/dir').to.equal(true);
+    expect(sumologic.stdConsole.dir.calledOnce, 'console/dir').to.equal(true);
   });
 });
