@@ -23,7 +23,7 @@ module.exports = function SumoLogger(collectorCode, opts) {
   var collectorEndpoint = endpoint + collectorCode;
   var syncInterval = opts.syncInterval || 1000;
 
-  var stdConsole = {
+  me.stdConsole = {
     log: console.log,
     info: console.info,
     error: console.error,
@@ -37,10 +37,29 @@ module.exports = function SumoLogger(collectorCode, opts) {
   }
 
   me.restoreConsole = function() {
-    console.log = stdConsole.log;
-    console.info = stdConsole.info;
-    console.error = stdConsole.error;
-    console.warn = stdConsole.warn;
+    console.log = me.stdConsole.log;
+    console.info = me.stdConsole.info;
+    console.error = me.stdConsole.error;
+    console.warn = me.stdConsole.warn;
+  }
+
+  me.augmentConsole = function() {
+      console.log = function() {
+          me.stdConsole.log.apply(this, arguments);
+          me.log.apply(this, arguments);
+      }
+      console.info = function() {
+          me.stdConsole.info.apply(this, arguments);
+          me.info.apply(this, arguments);
+      }
+      console.warn = function() {
+          me.stdConsole.warn.apply(this, arguments);
+          me.warn.apply(this, arguments);
+      }
+      console.error = function() {
+          me.stdConsole.error.apply(this, arguments);
+          me.error.apply(this, arguments);
+      }
   }
 
   // Cache of entries we are yet to sync
@@ -96,8 +115,8 @@ module.exports = function SumoLogger(collectorCode, opts) {
       url: collectorEndpoint,
       body: body,
     }, function(error, response) {
-      var failed = !!error || 
-        response.status < 200 || 
+      var failed = !!error ||
+        response.status < 200 ||
         response.status >= 400;
 
       if (!failed) {

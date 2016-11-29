@@ -83,27 +83,27 @@ describe('Sumo Logic Collector', function() {
     sumologic.log("log line");
 
     // First call to request, we should get a single line
-    nextStatus = 100; 
-    expectedBody = '{"level":"INFO","data":"log line"}'; 
+    nextStatus = 100;
+    expectedBody = '{"level":"INFO","data":"log line"}';
     clock.tick(1000);
 
     // Retry attempt - should have the same body as the previous request
-    nextStatus = 400; 
-    expectedBody = '{"level":"INFO","data":"log line"}'; 
+    nextStatus = 400;
+    expectedBody = '{"level":"INFO","data":"log line"}';
     clock.tick(1000);
 
     // Third retry attempt, should have 2 lines to sync (the original and the new line just added)
     sumologic.log("new log line");
-    nextStatus = 500; 
+    nextStatus = 500;
     expectedBody = '{"level":"INFO","data":"log line"}\n{"level":"INFO","data":"new log line"}'
     clock.tick(1000);
 
     // attempts from now on sync all data, then request should no longer be called (as there are no log lines)
-    nextStatus = 200; 
+    nextStatus = 200;
     expectedBody = '{"level":"INFO","data":"log line"}\n{"level":"INFO","data":"new log line"}'
     clock.tick(1000);
 
-    nextStatus = 200; 
+    nextStatus = 200;
     expectedBody = "ERROR, request shouldn't be called anymore";
     clock.tick(1000);
   });
@@ -217,5 +217,38 @@ describe('Sumo Logic Collector', function() {
     check("msg 1");
     check({some: "values", and: "keys"});
     check([1,2,3,4]);
+  });
+
+  it("Augments console.log correctly", function () {
+    var expected = {};
+    var sumologic = newTestSumoLogger(function(opts, cb) {
+      expect(JSON.parse(opts.body)).to.deep.equal({level: "INFO", data: expected});
+      cb(undefined, {status: 200});
+    });
+    sumologic.augmentConsole();
+
+    sinon.spy(sumologic, 'log');
+    sinon.spy(sumologic.stdConsole, 'log');
+    console.log("msg 1", "msg 2");
+    expect(sumologic.log.calledOnce, 'sumo/log').to.equal(true);
+    expect(sumologic.stdConsole.log.calledOnce, 'console/log').to.equal(true);
+
+    sinon.spy(sumologic, 'info');
+    sinon.spy(sumologic.stdConsole, 'info');
+    console.info("msg 1", "msg 2");
+    expect(sumologic.info.calledOnce, 'sumo/info').to.equal(true);
+    expect(sumologic.stdConsole.info.calledOnce, 'console/info').to.equal(true);
+
+    sinon.spy(sumologic, 'warn');
+    sinon.spy(sumologic.stdConsole, 'warn');
+    console.warn("msg 1", "msg 2");
+    expect(sumologic.warn.calledOnce, 'sumo/warn').to.equal(true);
+    expect(sumologic.stdConsole.warn.calledOnce, 'console/warn').to.equal(true);
+
+    sinon.spy(sumologic, 'error');
+    sinon.spy(sumologic.stdConsole, 'error');
+    console.error("msg 1", "msg 2");
+    expect(sumologic.error.calledOnce, 'sumo/error').to.equal(true);
+    expect(sumologic.stdConsole.error.calledOnce, 'console/error').to.equal(true);
   });
 });

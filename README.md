@@ -1,6 +1,6 @@
 # node-sumologic
 
-A well tested, drop-in replacement for console.log that syncs logs directly to Sumo Logic via their 
+A well tested, drop-in replacement for console.log that syncs logs directly to Sumo Logic via their
 HTTP api (as opposed to using their collectors)
 
 ## Installation
@@ -22,6 +22,9 @@ var logger = new SumoLogger('SUMOLOGIC-HTTP-COLLECTOR-CODE' /*, opts */);
 
 // optional - if you would like console.log to go to sumo logic
 logger.replaceConsole()
+
+// optional - if you would like console.log to go to sumo logic and stdout
+logger.augmentConsole()
 
 logger.log("Yeah, it worked");
 ```
